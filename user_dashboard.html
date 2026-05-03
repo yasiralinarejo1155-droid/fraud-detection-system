@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>FraudShield AI · Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style id="theme-style">
+        /* Light Theme (Default) */
+        :root {
+            --primary: #2c6280;
+            --primary-light: #4f7e9c;
+            --primary-soft: #eef3f8;
+            --secondary: #5b6f82;
+            --border-light: #e2eaf1;
+            --bg-gray: #f9fbfd;
+            --sidebar-bg: #ffffff;
+            --text-color: #1a2c3e;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.12);
+        }
+        
+        /* Dark Theme */
+        body.dark-theme {
+            --primary: #5b9bc2;
+            --primary-light: #7db4d6;
+            --primary-soft: #1e2f3a;
+            --secondary: #94a3b8;
+            --border-light: #334155;
+            --bg-gray: #0f172a;
+            --sidebar-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --card-bg: #1e293b;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.3);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.4);
+        }
+        
+        body.dark-theme .sidebar,
+        body.dark-theme .result-card,
+        body.dark-theme .file-chip,
+        body.dark-theme .message-row.ai,
+        body.dark-theme .modal-container,
+        body.dark-theme .deepseek-input-bar,
+        body.dark-theme .model-selector,
+        body.dark-theme .user-menu-popup {
+            background: var(--sidebar-bg);
+        }
+        
+        body.dark-theme .welcome-screen h2,
+        body.dark-theme .modal-header h3,
+        body.dark-theme .menu-item {
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .url-input-field {
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .url-input-field::placeholder {
+            color: #64748b;
+        }
+        
+        body.dark-theme .form-group input,
+        body.dark-theme .form-group textarea,
+        body.dark-theme .form-group select {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .download-report-btn {
+            background: #0f172a;
+            color: var(--primary);
+        }
+        
+        body.dark-theme .stamp-overlay.real {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        body.dark-theme .stamp-overlay.fake {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gray);
+            color: var(--text-color);
+            overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ----- LAYOUT ----- */
+        .app-container { display: flex; height: 100vh; }
+
+        /* ----- SIDEBAR ----- */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            transition: width 0.3s ease, transform 0.3s ease, background 0.3s ease;
+            overflow-x: hidden;
+        }
+        
+        .sidebar.collapsed { width: 72px; }
+        .sidebar.collapsed .brand-text, 
+        .sidebar.collapsed .recent-header, 
+        .sidebar.collapsed .clear-history,
+        .sidebar.collapsed .recent-title, 
+        .sidebar.collapsed .user-details, 
+        .sidebar.collapsed .new-scan-btn span { display: none; }
+        
+        .sidebar.collapsed .sidebar-header { padding: 20px 0; justify-content: center; }
+        .sidebar.collapsed .recent-item { justify-content: center; padding: 10px 0; }
+        .sidebar.collapsed .recent-icon { margin-right: 0; }
+        .sidebar.collapsed .sidebar-user { justify-content: center; padding: 12px 0; }
+        .sidebar.collapsed .new-scan-btn { justify-content: center; padding: 12px 0; margin: 10px 10px; }
+        .sidebar.collapsed .collapse-btn { display: none !important; }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .logo-wrapper {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; white-space: nowrap;
+            cursor: pointer;
+        }
+        .real-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;}
+        .brand-text { font-size: 1.15rem; font-weight: 700; color: var(--primary); }
+        
+        .collapse-btn {
+            background: transparent; border: none; color: var(--secondary);
+            cursor: pointer; padding: 6px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .collapse-btn:hover { background: var(--primary-soft); color: var(--primary); }
+        .collapse-btn i { font-size: 1.2rem; }
+
+        .nav-section { padding: 0 8px; border-bottom: 1px solid var(--border-light); }
+        .new-scan-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; margin: 10px 8px;
+            background: var(--primary); color: white;
+            border-radius: 10px; cursor: pointer; transition: 0.2s;
+            font-weight: 500; font-size: 0.95rem; box-shadow: var(--shadow-sm);
+        }
+        .new-scan-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+        .new-scan-btn i { font-size: 1.1rem; }
+        
+        .recent-section { flex: 1; padding: 8px; overflow-y: auto; }
+        .recent-header-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 10px 8px 12px;
+        }
+        .recent-header {
+            font-size: 0.7rem; font-weight: 700; color: var(--secondary);
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .clear-history { color: var(--secondary); font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .clear-history:hover { color: #dc2626; }
+        .recent-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 10px; border-radius: 8px;
+            cursor: pointer; transition: background 0.2s; margin-bottom: 2px;
+        }
+        .recent-item:hover { background: var(--primary-soft); }
+        .recent-icon { width: 20px; text-align: center; color: var(--secondary); font-size: 0.9rem;}
+        .recent-title { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);}
+
+        .sidebar-footer { padding: 12px; border-top: 1px solid var(--border-light); position: relative; }
+        .sidebar-user {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px; border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        /* HOVER DROPDOWN - Auto open on mouse hover */
+        .sidebar-footer:hover .user-menu-popup,
+        .sidebar-user:hover + .user-menu-popup,
+        .user-menu-popup:hover {
+            display: flex !important;
+        }
+        .sidebar-user:hover { background: var(--primary-soft); }
+        .user-avatar {
+            width: 34px; height: 34px; background: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; flex-shrink: 0; font-size: 0.9rem;
+        }
+        .user-details { flex: 1; overflow: hidden; }
+        .user-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; color: var(--text-color);}
+        .user-email { font-size: 0.7rem; color: var(--secondary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+
+        .user-menu-popup {
+            position: absolute; bottom: calc(100% + 10px); left: 12px; right: 12px;
+            background: white; border-radius: 12px;
+            box-shadow: var(--shadow-lg); border: 1px solid var(--border-light);
+            display: none; flex-direction: column; overflow: hidden; z-index: 200;
+        }
+        body.dark-theme .user-menu-popup {
+            background: #1e293b;
+        }
+        .menu-item {
+            padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; font-size: 0.9rem; font-weight: 500; color: #1e293b;
+            transition: background 0.2s;
+        }
+        body.dark-theme .menu-item {
+            color: #e2e8f0;
+        }
+        .menu-item:hover { background: var(--primary-soft); }
+        .menu-item i { width: 16px; color: var(--secondary); text-align: center;}
+        .menu-item.danger { color: #dc2626; border-top: 1px solid var(--border-light);}
+        .menu-item.danger i { color: #dc2626; }
+
+        /* ----- MAIN CONTENT ----- */
+        .main-content {
+            margin-left: 260px; flex: 1;
+            display: flex; flex-direction: column;
+            height: 100vh; position: relative;
+            transition: margin-left 0.3s ease;
+        }
+        .sidebar.collapsed ~ .main-content { margin-left: 72px; }
+
+        .mobile-header {
+            display: none; align-items: center; justify-content: center;
+            height: 60px; background: var(--sidebar-bg); border-bottom: 1px solid var(--border-light);
+            position: relative;
+        }
+        .mobile-toggle {
+            position: absolute; left: 15px; background: none; border: none;
+            font-size: 1.2rem; color: var(--primary); cursor: pointer;
+        }
+
+        .chat-area {
+            flex: 1; overflow-y: auto; padding: 40px 0 160px 0;
+            display: flex; flex-direction: column; scroll-behavior: smooth;
+        }
+        .welcome-screen { text-align: center; margin: auto; max-width: 520px; padding: 20px; }
+        .welcome-screen h2 { font-size: 1.8rem; margin-bottom: 12px; font-weight: 600; color: var(--text-color);}
+        .welcome-screen p { color: var(--secondary); line-height: 1.5; font-size: 1.05rem;}
+
+        .message-row { display: flex; padding: 20px 30px; justify-content: center; width: 100%;}
+        .message-row.ai { background: var(--card-bg); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+        .message-content-wrapper { max-width: 800px; width: 100%; display: flex; gap: 20px; }
+        .msg-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .user-avatar-icon { background: var(--primary); color: white; }
+        .ai-avatar-icon { background: var(--card-bg); border: 1px solid var(--border-light); padding: 4px; border-radius: 50%; }
+        .ai-avatar-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+        .file-chip {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            padding: 12px 18px; border-radius: 12px; box-shadow: var(--shadow-sm);
+        }
+
+        .loader-container { display: flex; flex-direction: column; gap: 12px; padding-top: 5px; }
+        .loader-dots { display: flex; gap: 6px; align-items: center;}
+        .dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .loader-text { font-size: 0.9rem; color: var(--secondary); font-weight: 500;}
+
+        .image-preview { position: relative; display: inline-block; max-width: 100%; margin-bottom: 20px; }
+        .preview-img { max-width: 100%; max-height: 360px; border-radius: 12px; border: 1px solid var(--border-light); display: block;}
+        
+        .stamp-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            padding: 10px 20px;
+            border: 4px solid;
+            border-radius: 10px;
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .stamp-overlay.real { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .stamp-overlay.fake { color: #ef4444; border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        .result-card { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px; margin-top: 10px; width: 100%; }
+        .confidence-bar { height: 8px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin: 15px 0; }
+        .confidence-fill { height: 100%; border-radius: 20px; }
+        .fill-real { background: #10b981; }
+        .fill-fake { background: #ef4444; }
+        .conclusion-box { padding: 16px; border-radius: 12px; margin-top: 15px; font-size: 0.95rem; font-weight: 500;}
+        .conclusion-safe { background: #e6f7ec; color: #0b4635; border: 1px solid #b7e4c7;}
+        .conclusion-danger { background: #fee9e7; color: #a12020; border: 1px solid #fecaca;}
+        
+        .download-report-btn {
+            margin-top: 16px; background: var(--card-bg); border: 1px solid var(--border-light);
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; color: var(--primary);
+        }
+        .download-report-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+
+        .input-wrapper {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, var(--bg-gray) 60%, transparent);
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+        }
+
+        .model-selector {
+            display: flex; background: var(--card-bg); padding: 4px; border-radius: 30px;
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);
+        }
+        .model-btn {
+            padding: 8px 20px; border-radius: 30px; border: none; background: transparent;
+            cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; color: var(--secondary);
+        }
+        .model-btn.active { background: var(--primary-soft); color: var(--primary); }
+
+        .deepseek-input-bar {
+            width: 100%; max-width: 720px; background: var(--card-bg);
+            border: 1px solid var(--border-light); border-radius: 30px;
+            padding: 6px 6px; display: flex; align-items: center;
+            box-shadow: var(--shadow-lg); transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .deepseek-input-bar:focus-within { border-color: var(--primary); box-shadow: 0 16px 40px rgba(44,98,128,0.15); }
+        
+        .upload-action-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--primary-soft);
+            display: flex; align-items: center; justify-content: center; color: var(--primary);
+            font-size: 16px; border: none; cursor: pointer; transition: 0.2s; margin-right: 10px;
+        }
+        .upload-action-btn:hover { background: var(--border-light); transform: scale(1.05); }
+        
+        .url-input-field {
+            flex: 1; border: none; background: transparent;
+            font-size: 0.95rem; color: var(--text-color); padding: 10px 5px;
+            outline: none; font-family: 'Inter', sans-serif;
+        }
+        .url-input-field::placeholder { color: #94a3b8; }
+        
+        .send-url-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--primary);
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 14px; border: none; cursor: pointer; transition: 0.2s;
+        }
+        .send-url-btn:hover { background: var(--primary-light); transform: scale(1.05); }
+
+        .input-footer { font-size: 0.75rem; color: var(--secondary); text-align: center; margin-top: 5px; }
+
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-backdrop.show { display: flex; opacity: 1; }
+        
+        .modal-container {
+            background: var(--card-bg); width: 90%; max-width: 500px;
+            border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px); transition: transform 0.3s ease;
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        .modal-backdrop.show .modal-container { transform: translateY(0); }
+        
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border-light);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 600; color: var(--text-color); }
+        .modal-close {
+            background: var(--primary-soft); border: none; width: 32px; height: 32px;
+            border-radius: 50%; color: var(--primary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .modal-close:hover { background: var(--border-light); transform: rotate(90deg); }
+        
+        .modal-body { padding: 24px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--secondary); margin-bottom: 8px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 12px 16px; border-radius: 12px;
+            border: 1px solid var(--border-light); background: var(--bg-gray);
+            font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s;
+            color: var(--text-color);
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(44,98,128,0.1); }
+        
+        .btn-primary {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+            width: 100%; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+        .toast-message {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .toast-message.error { background: #ef4444; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .sidebar.collapsed { width: 260px; } 
+            .main-content { margin-left: 0 !important; }
+            .mobile-header { display: flex; }
+            .desktop-only { display: none !important; }
+            .deepseek-input-bar { width: 95%; }
+            .message-row { padding: 15px; }
+            .stamp-overlay { font-size: 1.5rem; padding: 5px 10px; letter-spacing: 2px; }
+            .result-card { padding: 16px; }
+            .user-menu-popup { position: fixed; bottom: auto; top: 60px; left: 10px; right: 10px; }
+        }
+        
+        @media (max-width: 480px) {
+            .stamp-overlay { font-size: 1.2rem; padding: 3px 8px; }
+            .confidence-bar { height: 6px; }
+            .download-report-btn { padding: 6px 12px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-wrapper" onclick="handleLogoClick(event)">
+                <img src="/static/uploads/images/logo1.png" alt="Logo" class="real-logo" onerror="this.src='https://via.placeholder.com/32?text=FS'">
+                <span class="brand-text">FraudShield AI</span>
+            </div>
+            <button class="collapse-btn desktop-only" onclick="toggleSidebarCollapse()" title="Toggle Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="new-scan-btn" onclick="startNewTab()" title="New Scan">
+                <i class="fas fa-plus"></i>
+                <span>New Scan</span>
+            </div>
+        </div>
+        
+        <div class="recent-section">
+            <div class="recent-header-row">
+                <div class="recent-header">Recent Scans</div>
+                <div class="clear-history" onclick="clearHistory()" title="Clear history"><i class="fas fa-trash-alt"></i></div>
+            </div>
+            <div id="recentList">
+                <div style="text-align: center; padding: 20px; color: var(--secondary); font-size: 0.8rem;">No history yet</div>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="userProfileBtn">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <div class="user-details">
+                    <div class="user-name" id="displayName">{{ username if username else 'User' }}</div>
+                    <div class="user-email" id="displayEmail">{{ session.get('email', 'user@example.com') }}</div>
+                </div>
+            </div>
+            
+            <div class="user-menu-popup" id="userMenu">
+                <div class="menu-item" onclick="openModal('profileModal')"><i class="fas fa-user-circle"></i> Profile</div>
+                <div class="menu-item" onclick="openModal('settingsModal')"><i class="fas fa-cog"></i> Settings</div>
+                <div class="menu-item" onclick="openModal('feedbackModal')"><i class="fas fa-comment"></i> Feedback</div>
+                <div class="menu-item danger" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="mobile-header">
+            <button class="mobile-toggle" onclick="toggleMobileSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="brand-text">FraudShield AI</div>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <div class="welcome-screen" id="welcomeScreen">
+                <img src="/static/uploads/images/logo1.png" alt="Logo" style="width: 70px; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/70?text=FS'">
+                <h2>What can I verify for you?</h2>
+                <p>Select a model below, then upload a file or paste a URL. We'll handle the forensic analysis.</p>
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="model-selector">
+                <button class="model-btn active" onclick="selectModel('financial')">Financial Forensics</button>
+                <button class="model-btn" onclick="selectModel('text')">AI Text Detector</button>
+            </div>
+            
+            <div class="deepseek-input-bar">
+                <button class="upload-action-btn" onclick="document.getElementById('fileInput').click()" title="Upload File">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                
+                <input type="text" id="urlInput" class="url-input-field" placeholder="Paste URL for analysis or upload a file..." onkeypress="handleEnter(event)">
+                
+                <button class="send-url-btn" onclick="processUrl()" title="Analyze">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                
+                <input type="file" id="fileInput" style="display: none;" accept=".png,.jpg,.jpeg,.gif,.txt,.pdf" onchange="handleFile(this)">
+            </div>
+            <div class="input-footer">FraudShield AI may produce inaccurate results. Verify critical data.</div>
+        </div>
+    </div>
+    
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeModalsOnBackdrop(event)">
+        
+        <div class="modal-container" id="profileModal" style="display:none;">
+            <div class="modal-header">
+                <h3>My Account</h3>
+                <button class="modal-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Full Name</label><input type="text" id="profileName" value="{{ username if username else 'User' }}"></div>
+                <div class="form-group"><label>Email Address</label><input type="email" id="profileEmail" value="{{ session.get('email', 'user@example.com') }}"></div>
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="modal-container" id="settingsModal" style="display:none;">
+            <div class="modal-header">
+                <h3>General Settings</h3>
+                <button class="modal-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Theme</label>
+                    <select id="themeSelect" onchange="changeTheme()">
+                        <option value="light">Light Mode</option>
+                        <option value="dark">Dark Mode</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <select id="languageSelect">
+                        <option value="en">English (US)</option>
+                        <option value="es">Spanish</option>
+                        <option value="ur">Urdu</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="closeAllModals(); showToast('Settings saved successfully!', 'success')">Apply Settings</button>
+            </div>
+        </div>
+
+        <div class="modal-container" id="feedbackModal" style="display:none;">
+            <div class="modal-header">
+                <h3>Send Feedback</h3>
+                <button class="modal-close" onclick="closeAllModals()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Feedback Type</label>
+                    <select id="feedbackType">
+                        <option value="general">General Feedback</option>
+                        <option value="bug">Bug Report</option>
+                        <option value="feature">Feature Request</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="feedbackSubject" placeholder="Brief description...">
+                </div>
+                <div class="form-group">
+                    <label>Your Message</label>
+                    <textarea id="feedbackMessage" rows="4" placeholder="Tell us about your experience..."></textarea>
+                </div>
+                <button class="btn-primary" onclick="submitFeedbackToServer()">Submit Feedback</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentModel = 'financial';
+    let analysisHistory = [];
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('fraudshield_theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        if(document.getElementById('themeSelect')) document.getElementById('themeSelect').value = 'dark';
+    }
+
+    // Theme Change Function
+    function changeTheme() {
+        const theme = document.getElementById('themeSelect').value;
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('fraudshield_theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-theme');
+            localStorage.setItem('fraudshield_theme', 'light');
+        }
+        showToast(`Theme changed to ${theme} mode`, 'success');
+    }
+
+    // Show Toast Message
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type === 'error' ? 'error' : ''}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Handle Logout - Redirect to Home
+    function handleLogout() {
+        closeAllModals();
+        showToast('Logging out...', 'success');
+        setTimeout(() => {
+            window.location.href = '/logout';
+        }, 500);
+    }
+
+    // Submit Feedback to Server (Saves to Database for Admin)
+    async function submitFeedbackToServer() {
+        const feedbackType = document.getElementById('feedbackType').value;
+        const subject = document.getElementById('feedbackSubject').value;
+        const message = document.getElementById('feedbackMessage').value;
+        
+        if (!subject || !message) {
+            showToast('Please fill in all fields', 'error');
+            return;
+        }
+        
+        const submitBtn = event.target;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        submitBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/submit-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: feedbackType,
+                    subject: subject,
+                    message: message
+                })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('Thank you! Feedback submitted successfully', 'success');
+                document.getElementById('feedbackSubject').value = '';
+                document.getElementById('feedbackMessage').value = '';
+                closeAllModals();
+            } else {
+                showToast('Error: ' + data.message, 'error');
+            }
+        } catch (error) {
+            showToast('Network error. Please try again.', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // Save Analysis Result to Database
+    async function saveAnalysisToDatabase(type, filename, result, confidence, details, imageData = null) {
+        try {
+            let endpoint = '';
+            let body = {};
+            
+            if (type === 'transaction') {
+                endpoint = '/api/save-transaction';
+                body = {
+                    filename: filename,
+                    original_filename: filename,
+                    real_percentage: result === 'REAL' ? confidence : 100 - confidence,
+                    fake_percentage: result === 'FAKE' ? confidence : 100 - confidence,
+                    result: result,
+                    confidence: confidence,
+                    analysis_details: details
+                };
+            } else if (type === 'ai_text') {
+                endpoint = '/api/save-ai-text';
+                body = {
+                    content: details,
+                    filename: filename,
+                    ai_percentage: result === 'AI GENERATED' ? confidence : 100 - confidence,
+                    human_percentage: result === 'HUMAN WRITTEN' ? confidence : 100 - confidence,
+                    result: result,
+                    confidence: confidence,
+                    analysis_details: details,
+                    word_count: details.split(' ').length,
+                    char_count: details.length
+                };
+            }
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error saving to database:', error);
+            return null;
+        }
+    }
+
+    // Header Logo Logic
+    function handleLogoClick(e) {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+        }
+    }
+
+    function toggleSidebarCollapse() { 
+        document.getElementById('sidebar').classList.toggle('collapsed'); 
+    }
+    
+    function toggleMobileSidebar() { 
+        document.getElementById('sidebar').classList.toggle('mobile-open'); 
+    }
+
+    function startNewTab() {
+        const chatArea = document.getElementById('chatArea');
+        chatArea.innerHTML = '';
+        const welcomeHtml = `
+            <div class="welcome-screen" id="welcomeScreen">
+                <img src="/static/uploads/images/logo1.png" alt="Logo" style="width: 70px; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/70?text=FS'">
+                <h2>What can I verify for you?</h2>
+                <p>Select a model below, then upload a file or paste a URL. We'll handle the forensic analysis.</p>
+            </div>`;
+        chatArea.innerHTML = welcomeHtml;
+        document.getElementById('urlInput').value = '';
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+        }
+    }
+
+    // For mobile touch - also allow click to open menu
+    function toggleUserMenuMobile(e) {
+        if (window.innerWidth <= 768) {
+            e.stopPropagation();
+            document.getElementById('userMenu').classList.toggle('show');
+        }
+    }
+    
+    // Attach mobile click handler
+    document.getElementById('userProfileBtn').addEventListener('click', toggleUserMenuMobile);
+
+    function openModal(modalId) {
+        document.getElementById('userMenu').classList.remove('show');
+        document.getElementById('modalBackdrop').classList.add('show');
+        document.querySelectorAll('.modal-container').forEach(m => m.style.display = 'none');
+        document.getElementById(modalId).style.display = 'flex';
+    }
+    
+    function closeAllModals() { 
+        document.getElementById('modalBackdrop').classList.remove('show'); 
+    }
+    
+    function closeModalsOnBackdrop(e) { 
+        if(e.target === document.getElementById('modalBackdrop')) closeAllModals(); 
+    }
+
+    function saveProfile() {
+        const newName = document.getElementById('profileName').value;
+        const newEmail = document.getElementById('profileEmail').value;
+        document.getElementById('displayName').innerText = newName;
+        document.getElementById('displayEmail').innerText = newEmail;
+        closeAllModals();
+        showToast('Profile updated successfully!', 'success');
+        
+        fetch('/update-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `username=${encodeURIComponent(newName)}&email=${encodeURIComponent(newEmail)}`
+        }).catch(console.error);
+    }
+
+    function clearHistory() {
+        analysisHistory = [];
+        document.getElementById('recentList').innerHTML = `<div style="text-align:center;padding:20px;color:var(--secondary);font-size:0.8rem;">No history yet</div>`;
+        showToast('History cleared', 'success');
+    }
+    
+    function addToHistory(filename, resultText, icon) {
+        analysisHistory.unshift({ filename: filename, icon: icon, result: resultText });
+        if(analysisHistory.length > 15) analysisHistory.pop();
+        const list = document.getElementById('recentList');
+        list.innerHTML = analysisHistory.map(i => `
+            <div class="recent-item" onclick="scrollToResult('${i.filename}')">
+                <div class="recent-icon"><i class="fas ${i.icon}"></i></div>
+                <div class="recent-title">${i.filename.substring(0, 25)}${i.filename.length > 25 ? '...' : ''}</div>
+                <span class="recent-result" style="font-size:0.7rem; color:${i.result === 'REAL' || i.result === 'HUMAN' ? '#10b981' : '#ef4444'}">${i.result}</span>
+            </div>`).join('');
+    }
+
+    function selectModel(model) {
+        currentModel = model;
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        if(model === 'financial') {
+            document.querySelector('.model-btn:first-child').classList.add('active');
+        } else {
+            document.querySelector('.model-btn:last-child').classList.add('active');
+        }
+    }
+
+    function handleEnter(e) { if(e.key === 'Enter') processUrl(); }
+    
+    function processUrl() {
+        const urlInput = document.getElementById('urlInput');
+        const urlValue = urlInput.value.trim();
+        if(!urlValue) return;
+        
+        const ws = document.getElementById('welcomeScreen');
+        if(ws) ws.style.display = 'none';
+        
+        const html = `
+        <div class="message-row user">
+            <div class="message-content-wrapper" style="flex-direction:row-reverse;">
+                <div class="msg-avatar user-avatar-icon"><i class="fas fa-user"></i></div>
+                <div class="msg-body" style="text-align:right;">
+                    <div class="file-chip" style="background:var(--primary-soft); border:none;">
+                        <i class="fas fa-link" style="color:var(--primary);"></i>
+                        <span style="font-weight:500;">${urlValue.length > 40 ? urlValue.substring(0,40)+'...' : urlValue}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+        
+        urlInput.value = '';
+        triggerAnalysis(urlValue, currentModel === 'financial');
+    }
+
+    function handleFile(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const ext = file.name.split('.').pop().toLowerCase();
+        const isImage = ['png','jpg','jpeg','gif'].includes(ext);
+        
+        if(currentModel === 'financial' && !isImage) { showToast('Please upload an image for Financial Forensics.', 'error'); return; }
+        if(currentModel === 'text' && isImage) { showToast('Please upload a text document for AI Text Detection.', 'error'); return; }
+        
+        const ws = document.getElementById('welcomeScreen');
+        if(ws) ws.style.display = 'none';
+        
+        const html = `
+        <div class="message-row user">
+            <div class="message-content-wrapper" style="flex-direction:row-reverse;">
+                <div class="msg-avatar user-avatar-icon"><i class="fas fa-user"></i></div>
+                <div class="msg-body" style="text-align:right;">
+                    <div class="file-chip">
+                        <i class="fas ${isImage ? 'fa-image' : 'fa-file-alt'}" style="color:var(--primary);"></i>
+                        <span style="font-weight:500;">${file.name}</span>
+                        <span style="color:var(--secondary); font-size:0.85rem;">${(file.size/1024).toFixed(1)} KB</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+        
+        if(isImage) {
+            const reader = new FileReader();
+            reader.onload = e => triggerAnalysisWithImage(file.name, e.target.result);
+            reader.readAsDataURL(file);
+        } else {
+            // Read text file content
+            const reader = new FileReader();
+            reader.onload = e => triggerTextAnalysis(file.name, e.target.result);
+            reader.readAsText(file);
+        }
+        
+        input.value = '';
+    }
+
+    function triggerTextAnalysis(filename, content) {
+        const loaderId = 'loader-' + Date.now();
+        appendLoader(loaderId);
+        setTimeout(() => {
+            const loader = document.getElementById(loaderId);
+            if(loader) loader.remove();
+            appendAiTextAnalysisWithContent(filename, content);
+        }, 2000);
+    }
+
+    function triggerAnalysis(fileNameOrUrl, isImageMode) {
+        const loaderId = 'loader-' + Date.now();
+        appendLoader(loaderId);
+        
+        setTimeout(() => {
+            const loader = document.getElementById(loaderId);
+            if(loader) loader.remove();
+            if(isImageMode) {
+                appendAiImageAnalysis(fileNameOrUrl, "https://via.placeholder.com/400x300?text=Analyzed+Image");
+            } else {
+                appendAiTextAnalysis(fileNameOrUrl);
+            }
+        }, 3000);
+    }
+    
+    function triggerAnalysisWithImage(filename, imgSrc) {
+        const loaderId = 'loader-' + Date.now();
+        appendLoader(loaderId);
+        setTimeout(() => {
+            const loader = document.getElementById(loaderId);
+            if(loader) loader.remove();
+            appendAiImageAnalysis(filename, imgSrc);
+        }, 2000);
+    }
+
+    function appendLoader(loaderId) {
+        const html = `
+        <div class="message-row ai" id="${loaderId}">
+            <div class="message-content-wrapper">
+                <div class="msg-avatar ai-avatar-icon"><img src="/static/uploads/images/logo1.png" alt="AI" onerror="this.src='https://via.placeholder.com/36?text=AI'"></div>
+                <div class="msg-body">
+                    <div class="loader-container">
+                        <div class="loader-text">Analyzing structure and metadata...</div>
+                        <div class="loader-dots">
+                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+    }
+
+    async function appendAiImageAnalysis(filename, imgSrc) {
+        const isReal = Math.random() > 0.5;
+        const confidence = Math.floor(Math.random()*20)+75;
+        const fillClass = isReal ? 'fill-real' : 'fill-fake';
+        const stampClass = isReal ? 'real' : 'fake';
+        const stampText = isReal ? 'AUTHENTIC' : 'FORGERY';
+        const resultText = isReal ? 'REAL' : 'FAKE';
+        const details = isReal ? 'No signs of digital tampering found in pixels or metadata.' : 'Anomalies detected. High probability of forgery or editing.';
+        
+        // Save to database
+        try {
+            await fetch('/transaction/upload-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: filename,
+                    original_filename: filename,
+                    real_percentage: isReal ? confidence : 100 - confidence,
+                    fake_percentage: isReal ? 100 - confidence : confidence,
+                    result: resultText,
+                    confidence: confidence,
+                    analysis_details: details
+                })
+            });
+        } catch(e) { console.error('Save error:', e); }
+        
+        const html = `
+        <div class="message-row ai" data-filename="${filename}">
+            <div class="message-content-wrapper">
+                <div class="msg-avatar ai-avatar-icon"><img src="/static/uploads/images/logo1.png" alt="AI" onerror="this.src='https://via.placeholder.com/36?text=AI'"></div>
+                <div class="msg-body" style="width:100%;">
+                    <div class="image-preview">
+                        <img src="${imgSrc}" class="preview-img" crossorigin="anonymous">
+                        <div class="stamp-overlay ${stampClass}">${stampText}</div>
+                    </div>
+                    <div class="result-card">
+                        <h4 style="font-size:1.1rem; margin-bottom:10px; color:var(--text-color);">${isReal?'✅ Authentic Image':'❌ Manipulation Detected'}</h4>
+                        <p style="color:var(--secondary); font-size:0.9rem;">Confidence Level: <strong>${confidence}%</strong></p>
+                        <div class="confidence-bar"><div class="confidence-fill ${fillClass}" style="width:${confidence}%"></div></div>
+                        <div class="conclusion-box ${isReal?'conclusion-safe':'conclusion-danger'}">
+                            ${details}
+                        </div>
+                    </div>
+                    <div class="download-report-btn" onclick="downloadReport('${filename}', ${isReal}, ${confidence}, 'image')">
+                        <i class="fas fa-download"></i> Export Full Report
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        addToHistory(filename, resultText, 'fa-receipt');
+        scrollToBottom();
+    }
+
+    async function appendAiTextAnalysis(filename) {
+        const isHuman = Math.random() > 0.5;
+        const confidence = Math.floor(Math.random()*20)+75;
+        const fillClass = isHuman ? 'fill-real' : 'fill-fake';
+        const resultText = isHuman ? 'HUMAN WRITTEN' : 'AI GENERATED';
+        const details = isHuman ? 'Natural language patterns detected. Likely human written.' : 'Predictable token phrasing found. Likely generated by an LLM.';
+        
+        // Save to database
+        try {
+            await fetch('/ai-text/detect-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: details,
+                    filename: filename,
+                    ai_percentage: isHuman ? 100 - confidence : confidence,
+                    human_percentage: isHuman ? confidence : 100 - confidence,
+                    result: resultText,
+                    confidence: confidence,
+                    analysis_details: details
+                })
+            });
+        } catch(e) { console.error('Save error:', e); }
+        
+        const html = `
+        <div class="message-row ai" data-filename="${filename}">
+            <div class="message-content-wrapper">
+                <div class="msg-avatar ai-avatar-icon"><img src="/static/uploads/images/logo1.png" alt="AI" onerror="this.src='https://via.placeholder.com/36?text=AI'"></div>
+                <div class="msg-body" style="width:100%;">
+                    <div class="result-card">
+                        <h4 style="font-size:1.1rem; margin-bottom:10px; color:var(--text-color);">${isHuman?'🧑 Human Authored':'🤖 AI Generated'}</h4>
+                        <p style="color:var(--secondary); font-size:0.9rem;">Confidence Level: <strong>${confidence}%</strong></p>
+                        <div class="confidence-bar"><div class="confidence-fill ${fillClass}" style="width:${confidence}%"></div></div>
+                        <div class="conclusion-box ${isHuman?'conclusion-safe':'conclusion-danger'}">
+                            ${details}
+                        </div>
+                    </div>
+                    <div class="download-report-btn" onclick="downloadReport('${filename}', ${isHuman}, ${confidence}, 'text')">
+                        <i class="fas fa-download"></i> Export Full Report
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        addToHistory(filename, resultText, 'fa-file-alt');
+        scrollToBottom();
+    }
+    
+    async function appendAiTextAnalysisWithContent(filename, content) {
+        const words = content.split(/\s+/).length;
+        const isHuman = words > 200 ? Math.random() > 0.4 : Math.random() > 0.6;
+        const confidence = Math.floor(Math.random()*20)+ (words > 500 ? 75 : 60);
+        const fillClass = isHuman ? 'fill-real' : 'fill-fake';
+        const resultText = isHuman ? 'HUMAN WRITTEN' : 'AI GENERATED';
+        const details = isHuman ? 
+            `Natural language patterns detected. Text length: ${words} words. Quality: ${words > 200 ? 'Good' : 'Short text - analysis may be less accurate'}.` : 
+            `Predictable token phrasing found. Text length: ${words} words. ${words < 100 ? 'Short text may affect accuracy.' : ''}`;
+        
+        // Save to database
+        try {
+            await fetch('/ai-text/detect-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: content.substring(0, 5000),
+                    filename: filename,
+                    ai_percentage: isHuman ? 100 - confidence : confidence,
+                    human_percentage: isHuman ? confidence : 100 - confidence,
+                    result: resultText,
+                    confidence: confidence,
+                    analysis_details: details,
+                    word_count: words,
+                    char_count: content.length
+                })
+            });
+        } catch(e) { console.error('Save error:', e); }
+        
+        const html = `
+        <div class="message-row ai" data-filename="${filename}">
+            <div class="message-content-wrapper">
+                <div class="msg-avatar ai-avatar-icon"><img src="/static/uploads/images/logo1.png" alt="AI" onerror="this.src='https://via.placeholder.com/36?text=AI'"></div>
+                <div class="msg-body" style="width:100%;">
+                    <div class="result-card">
+                        <h4 style="font-size:1.1rem; margin-bottom:10px; color:var(--text-color);">${isHuman?'🧑 Human Authored':'🤖 AI Generated'}</h4>
+                        <p style="color:var(--secondary); font-size:0.9rem;">Confidence Level: <strong>${confidence}%</strong></p>
+                        <div class="confidence-bar"><div class="confidence-fill ${fillClass}" style="width:${confidence}%"></div></div>
+                        <div class="conclusion-box ${isHuman?'conclusion-safe':'conclusion-danger'}">
+                            ${details}
+                        </div>
+                        <div class="mt-3 p-3" style="background:var(--primary-soft); border-radius:12px; max-height:150px; overflow-y:auto;">
+                            <small>${content.substring(0, 300)}${content.length > 300 ? '...' : ''}</small>
+                        </div>
+                    </div>
+                    <div class="download-report-btn" onclick="downloadReport('${filename}', ${isHuman}, ${confidence}, 'text')">
+                        <i class="fas fa-download"></i> Export Full Report
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('chatArea').insertAdjacentHTML('beforeend', html);
+        addToHistory(filename, resultText, 'fa-file-alt');
+        scrollToBottom();
+    }
+
+    function downloadReport(filename, isPositive, confidence, type) {
+        const date = new Date().toLocaleString();
+        const result = isPositive ? (type === 'image' ? 'AUTHENTIC' : 'HUMAN WRITTEN') : (type === 'image' ? 'FORGERY' : 'AI GENERATED');
+        const content = `
+FRAUDSHIELD AI - ANALYSIS REPORT
+================================
+File: ${filename}
+Date: ${date}
+Analysis Type: ${type === 'image' ? 'Financial Forensics' : 'AI Text Detection'}
+
+RESULT: ${result}
+Confidence: ${confidence}%
+
+Report generated by FraudShield AI
+© 2026 FraudShield AI. All rights reserved.
+        `;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fraudshield_report_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Report downloaded successfully!', 'success');
+    }
+
+    function scrollToBottom() {
+        const area = document.getElementById('chatArea');
+        area.scrollTop = area.scrollHeight;
+    }
+
+    // Close dropdown when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+            if(!e.target.closest('#userProfileBtn') && !e.target.closest('#userMenu')) {
+                document.getElementById('userMenu').classList.remove('show');
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Dashboard - FraudShield AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafd 0%, #f1f5f9 100%);
+            color: #1a2c3e;
+            overflow-x: hidden;
+        }
+
+        :root {
+            --primary: #2c6280;
+            --primary-light: #4f7e9c;
+            --primary-soft: #eef3f8;
+            --secondary: #5b6f82;
+            --border-light: #e2eaf1;
+        }
+
+        /* soft background pattern */
+        .soft-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(44,98,128,0.02) 0%, rgba(255,255,255,0) 80%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .mesh-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#dce5ec 0.6px, transparent 0.6px);
+            background-size: 28px 28px;
+            opacity: 0.35;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 0.7rem 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+        }
+        .navbar-toggler {
+            border: none;
+            background: var(--primary-soft);
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(44,98,128,0.2);
+            outline: none;
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%232c6280' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        .logo-icon {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #1a2c3e;
+            letter-spacing: -0.2px;
+        }
+        .nav-link-custom {
+            font-weight: 500;
+            color: #2c4a62;
+            transition: 0.2s;
+            margin: 0 6px;
+        }
+        .nav-link-custom:hover {
+            color: var(--primary);
+        }
+
+        .btn-outline-login {
+            border: 1px solid var(--primary-light);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 40px;
+            padding: 8px 24px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-outline-login:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-gradient {
+            background: var(--primary);
+            color: white;
+            border-radius: 40px;
+            padding: 8px 24px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(44,98,128,0.15);
+        }
+        .btn-gradient:hover {
+            background: #1f4e68;
+            transform: translateY(-1px);
+        }
+
+        /* Dashboard Container */
+        .dashboard-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 24px 40px;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: white;
+            border-radius: 28px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-light);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .header-title p {
+            color: var(--secondary);
+            margin: 0;
+            font-size: 14px;
+        }
+        .admin-badge {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 22px 20px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-light);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: 0 20px 28px -12px rgba(44,98,128,0.08);
+        }
+        .stat-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--primary-soft);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon i {
+            font-size: 26px;
+            color: var(--primary);
+        }
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2c3e;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .stat-info p {
+            color: var(--secondary);
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .action-card {
+            background: white;
+            border-radius: 24px;
+            padding: 22px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-light);
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: 0 20px 28px -12px rgba(44,98,128,0.08);
+        }
+        .action-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--primary-soft);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        .action-icon i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .action-desc {
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-light);
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--primary-soft);
+            padding: 12px;
+            text-align: left;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+        .data-table tr:hover {
+            background: var(--primary-soft);
+        }
+        .data-table tr:hover td {
+            color: #1a2c3e;
+        }
+
+        /* Badges */
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .role-admin {
+            background: var(--primary);
+            color: white;
+        }
+        .role-user {
+            background: #eef3f8;
+            color: var(--primary);
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Buttons */
+        .btn-view {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-view:hover {
+            background: #1f4e68;
+            transform: translateY(-2px);
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Notifications */
+        .notification-icon {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            background: var(--primary-soft);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .notification-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .notifications-panel {
+            position: absolute;
+            top: 80px;
+            right: 30px;
+            width: 350px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            border: 1px solid var(--border-light);
+        }
+        .notifications-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notifications-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .notification-item:hover {
+            background: var(--primary-soft);
+        }
+        .notification-item.unread {
+            background: #e8f4fd;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border-left: 4px solid;
+        }
+        .alert-success { background: #d4edda; color: #155724; border-left-color: #28a745; }
+        .alert-danger { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: var(--secondary);
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-light);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-container { grid-template-columns: repeat(2, 1fr); }
+            .quick-actions { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .dashboard-wrapper { padding: 80px 16px 30px; }
+            .dashboard-header { flex-direction: column; text-align: center; }
+            .stats-container { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: 1fr; }
+            .section-title { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="soft-bg"></div>
+<div class="mesh-pattern"></div>
+
+<div class="wrapper">
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <span class="brand-name fw-bold">FraudShield AI Admin</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link-custom" href="{{ url_for('home') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link-custom" href="{{ url_for('about') }}">About</a></li>
+                </ul>
+                <div class="d-flex gap-2 ms-3">
+                    <a href="{{ url_for('logout') }}" class="btn btn-gradient"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        <div class="dashboard-header">
+            <div class="header-title">
+                <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
+                <p><i class="fas fa-tachometer-alt"></i> Manage your fraud detection platform</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="notification-icon" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">{{ pending_feedback|default(0) + pending_reports|default(0) }}</span>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-crown"></i> {{ admin_name|default('Admin') }}
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Notifications Panel -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notifications-header">
+                <h6 class="mb-0"><i class="fas fa-bell me-2"></i>Notifications</h6>
+                <span class="badge bg-primary" id="notificationCount">{{ pending_feedback|default(0) + pending_reports|default(0) }} new</span>
+            </div>
+            <div class="notifications-list">
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                        {% if feedback.status == 'pending' %}
+                            <div class="notification-item unread" onclick="window.location.href='{{ url_for('admin_feedback') }}'">
+                                <div><i class="fas fa-comment text-primary me-2"></i> New Feedback from {{ feedback.user.username }}</div>
+                                <small class="text-muted">{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') if feedback.created_at else '' }}</small>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% if reports %}
+                    {% for report in reports %}
+                        {% if report.status == 'pending' %}
+                            <div class="notification-item unread" onclick="window.location.href='{{ url_for('admin_feedback') }}'">
+                                <div><i class="fas fa-flag text-danger me-2"></i> New Report from {{ report.user.username }}</div>
+                                <small class="text-muted">{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else '' }}</small>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% if (pending_feedback|default(0) == 0) and (pending_reports|default(0) == 0) %}
+                    <div class="notification-item text-center text-muted">No new notifications</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-info"><h3>{{ stats.total_users|default(0) }}</h3><p>Total Users</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                <div class="stat-info"><h3>{{ stats.total_transactions|default(0) }}</h3><p>Financial Forensics</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-info"><h3>{{ stats.total_ai_texts|default(0) }}</h3><p>AI Text Scans</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info"><h3>{{ stats.total_scans|default(0) }}</h3><p>Total Scans</p></div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{{ url_for('admin_users') }}" class="action-card">
+                <div class="action-icon"><i class="fas fa-users"></i></div>
+                <div class="action-title">Manage Users</div>
+                <div class="action-desc">View all registered users</div>
+            </a>
+            <a href="{{ url_for('admin_transactions') }}" class="action-card">
+                <div class="action-icon"><i class="fas fa-receipt"></i></div>
+                <div class="action-title">Financial Forensics</div>
+                <div class="action-desc">View all transaction scans</div>
+            </a>
+            <a href="{{ url_for('admin_ai_texts') }}" class="action-card">
+                <div class="action-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="action-title">AI Text Scans</div>
+                <div class="action-desc">View all AI text scans</div>
+            </a>
+            <a href="{{ url_for('admin_feedback') }}" class="action-card">
+                <div class="action-icon"><i class="fas fa-comment"></i></div>
+                <div class="action-title">Feedback & Reports</div>
+                <div class="action-desc">Manage user feedback</div>
+            </a>
+            <a href="{{ url_for('export_stats') }}" class="action-card">
+                <div class="action-icon"><i class="fas fa-download"></i></div>
+                <div class="action-title">Export Stats</div>
+                <div class="action-desc">Download CSV report</div>
+            </a>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="section-card">
+            <div class="section-title">
+                <span><i class="fas fa-users me-2"></i>Recent Users</span>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td><strong>{{ user.username }}</strong>{% if user.id == session.user_id %} <span class="badge bg-success">You</span>{% endif %}</td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="role-badge {% if user.role == 'admin' %}role-admin{% else %}role-user{% endif %}">{{ user.role|upper }}</span></td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '' }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_user_detail', user_id=user.id) }}" class="btn-view me-1"><i class="fas fa-eye me-1"></i>View</a>
+                                {% if user.id != session.user_id %}
+                                <button onclick="deleteUser({{ user.id }}, '{{ user.username }}')" class="btn-delete"><i class="fas fa-trash me-1"></i>Delete</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><i class="fas fa-shield-alt me-1"></i> FraudShield AI • Admin Panel • {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }}</p>
+            <p class="small">© 2026 FraudShield AI. All rights reserved. | Developed with ❤️ by Yasir Ali Narejo</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleNotifications() {
+        const panel = document.getElementById('notificationsPanel');
+        panel.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const panel = document.getElementById('notificationsPanel');
+        const icon = document.querySelector('.notification-icon');
+        if (panel && icon && !panel.contains(event.target) && !icon.contains(event.target)) {
+            panel.classList.remove('show');
+        }
+    });
+
+    function deleteUser(userId, username) {
+        if (confirm(`⚠️ Are you sure you want to delete user "${username}"? This will delete ALL their scans and data. This action cannot be undone!`)) {
+            fetch(`/admin/delete-user/${userId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    }
+
+    setInterval(function() {
+        fetch('/get-unread-counts')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.success) {
+                    document.getElementById('notificationBadge').textContent = data.total || 0;
+                    document.getElementById('notificationCount').textContent = (data.total || 0) + ' new';
+                }
+            })
+            .catch(error => console.log('Error fetching notifications'));
+    }, 30000);
+
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => alert.remove());
+    }, 5000);
+</script>
+</body>
+</html>
